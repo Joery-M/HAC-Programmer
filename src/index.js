@@ -233,6 +233,7 @@ const menu = Menu.buildFromTemplate([
                 Made with Electron and patience.`.replace(/    /g, ""),
                 buttons: ["Open GitHub page", "OK"],
                 defaultId: 1,
+                cancelId: 1,
                 noLink: true
             }).then((val)=>{
                 if (val.response == 0) {
@@ -247,6 +248,13 @@ Menu.setApplicationMenu(menu);
 
 function openFilePath ()
 {
+    if (!fs.existsSync("./HACconfiguration.xml")) {
+        dialog.showMessageBox(BrowserWindow.getAllWindows()[0], {
+            message: "No HACconfiguration.xml found",
+            detail: "Please go to File > Load config file to load a config file.",
+        })
+        return
+    }
     shell.showItemInFolder(fs.realpathSync("./HACconfiguration.xml"));
 }
 

@@ -112,8 +112,7 @@ onAddValue(()=>{
         return
     }
     var row = document.querySelector(".useThis:checked").parentElement.parentElement
-
-    console.log(row);
+    
     row.querySelector("#num").value++
     save()
 })
