@@ -1,0 +1,4 @@
+/node_modules
+/dist/*
+/HACconfiguration.xml
+/electron-builder.env

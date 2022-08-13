@@ -1,0 +1,53 @@
+{
+    "name": "hac-programmer",
+    "productName": "hac-programmer",
+    "version": "1.0.0",
+    "description": "HAC Programmer",
+    "repository": "https://github.com/Joery-M/HAC-Programmer",
+    "main": "src/index.js",
+    "scripts": {
+        "start": "electron-forge start",
+        "startNative": "electron ./src/index.js",
+        "make": "electron-builder --win",
+        "publish": "electron-builder"
+    },
+    "keywords": [],
+    "author": {
+        "name": "Joery",
+        "email": "joery@joery.com"
+    },
+    "build": {
+        "extraResources": [
+            "./src/icon.ico"
+        ],
+        "win": {
+            "icon": "./src/icon.ico",
+            "publish": [
+                "github"
+            ]
+        },
+        "nsis": {
+            "oneClick": true,
+            "installerIcon": "./src/icon.ico",
+            "uninstallerIcon": "./src/icon.ico"
+        }
+    },
+    "license": "MIT",
+    "private": "true",
+    "config": {
+        "forge": {}
+    },
+    "dependencies": {
+        "auto-launch": "^5.0.5",
+        "electron-settings": "^4.0.2",
+        "electron-squirrel-startup": "^1.0.0",
+        "electron-updater": "^5.2.1",
+        "usb-detection": "^4.14.1"
+    },
+    "devDependencies": {
+        "@electron-forge/cli": "^6.0.0-beta.65",
+        "electron": "^18.2.0",
+        "electron-builder": "^23.3.3",
+        "electron-rebuild": "^3.2.7"
+    }
+}
