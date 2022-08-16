@@ -13,6 +13,17 @@ if (require('electron-squirrel-startup'))
 
 const iconPath = app.isPackaged ? path.join(process.resourcesPath, "./src/icon.ico") : "./src/icon.ico";
 
+//? Set defaults
+if (!settings.hasSync("AlreadyProgrammedNotif"))
+{
+    settings.setSync({
+        AlreadyProgrammedNotif: false,
+        Autostart: false,
+        clearOnUnplug: true,
+        backgroundRun: true
+    });
+}
+
 const createWindow = () =>
 {
     if (BrowserWindow.getAllWindows().length > 0)
@@ -112,17 +123,6 @@ app.on('ready', () =>
     app.name = "HAC Programmer";
     app.setAppUserModelId(app.name);
 
-    //? Set defaults
-    if (!settings.hasSync("AlreadyProgrammedNotif"))
-    {
-        settings.setSync({
-            AlreadyProgrammedNotif: false,
-            Autostart: false,
-            clearOnUnplug: true,
-            backgroundRun: true
-        });
-    }
-
     if (!fs.existsSync("C:/Program Files (x86)/FTDI/FT_Prog/FT_Prog-CmdLine.exe"))
     {
         var box = dialog.showMessageBoxSync({
@@ -221,7 +221,10 @@ const menu = Menu.buildFromTemplate([
             },
             {
                 label: 'Quit',
-                role: "quit"
+                click: () =>
+                {
+                    app.exit();
+                }
             }
         ]
     },

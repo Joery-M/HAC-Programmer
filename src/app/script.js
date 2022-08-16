@@ -2,11 +2,22 @@ const countersElem = document.querySelector("#counters tbody");
 
 document.querySelector("#addButton").onclick = () =>
 {
-    createCounter()
+    createCounter();
     save();
 };
 
 
+if (localStorage.length == 0)
+{
+    localStorage.setItem("counters", JSON.stringify([
+        {
+            name: "Counter 1",
+            value: "0",
+            autoName: true,
+            active: false
+        }
+    ]));
+}
 
 //? Load data
 if (localStorage.getItem("counters"))
@@ -16,11 +27,13 @@ if (localStorage.getItem("counters"))
     counters = JSON.parse(counters);
     counters.forEach((data) =>
     {
-        var counter = createCounter()
+        var counter = createCounter();
 
-        if (data.autoName) {
+        if (data.autoName)
+        {
             counter.querySelector('[type="text"]').placeholder = data.name;
-        }else{
+        } else
+        {
             counter.querySelector('[type="text"]').value = data.name;
         }
         counter.querySelector("#num").value = data.value;
@@ -46,8 +59,9 @@ function save ()
             active: false
         };
 
-        if (!counter.querySelector('[type="text"]').value) {
-            collectedData.autoName = true
+        if (!counter.querySelector('[type="text"]').value)
+        {
+            collectedData.autoName = true;
         }
 
         collectedData.name = counter.querySelector('[type="text"]').value || "Counter " + (i + 1);
@@ -87,32 +101,38 @@ function createCounter ()
     });
 
     //? Change value
-    counter.querySelectorAll("input").forEach((elem)=>{
-        if (elem.type == "radio") {
-            elem.onchange = save
-        }else{
-            elem.oninput = save
+    counter.querySelectorAll("input").forEach((elem) =>
+    {
+        if (elem.type == "radio")
+        {
+            elem.onchange = save;
+        } else
+        {
+            elem.oninput = save;
         }
-    })
+    });
 
     countersElem.appendChild(counter);
 
-    tbody.style.overflowY = "hidden"
-    setTimeout(() => {
+    tbody.style.overflowY = "hidden";
+    setTimeout(() =>
+    {
         tbody.style.height = tbody.scrollHeight + "px";
-        tbody.style.overflowY = "auto"
+        tbody.style.overflowY = "auto";
     }, 0);
 
-    calcTableHeight()
-    return counter
+    calcTableHeight();
+    return counter;
 }
 
-onAddValue(()=>{
-    if (!document.querySelector(".useThis:checked")) {
-        return
+onAddValue(() =>
+{
+    if (!document.querySelector(".useThis:checked"))
+    {
+        return;
     }
-    var row = document.querySelector(".useThis:checked").parentElement.parentElement
-    
-    row.querySelector("#num").value++
-    save()
-})
+    var row = document.querySelector(".useThis:checked").parentElement.parentElement;
+
+    row.querySelector("#num").value++;
+    save();
+});

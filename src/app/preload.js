@@ -36,7 +36,7 @@ addEventListener("resize", calcTableHeight);
 function calcTableHeight ()
 {
     var tbody = document.querySelector("tbody");
-    var output = document.querySelector("#output")
+    var output = document.querySelector("#output");
     tbody.style.maxHeight = (window.innerHeight - 165 - output.clientHeight) + "px";
 }
 
