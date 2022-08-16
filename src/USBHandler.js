@@ -20,7 +20,13 @@ const output = {
     },
     clear: () =>
     {
-        window.webContents.send('clear');
+        if (settings.getSync("clearOnUnplug"))
+        {
+            window.webContents.send('clear');
+        } else
+        {
+            window.webContents.send('log', "");
+        }
     }
 };
 
@@ -40,7 +46,6 @@ usbDetect.on("add", (device) =>
             fs.copyFileSync(`./HACconfiguration.xml`, `./temp.xml`,);
         } else
         {
-            fs.writeFileSync("./HACconfiguration.xml", "Add data here.", { encoding: "utf16le" });
             showNotification(`No HACconfiguration.xml found!\nOpen the GUI, go to File > Load config file, and select a file.`);
             return output.log(`No HACconfiguration.xml found!\n\nGo to File > Load config file, and select a file`);
         }
@@ -59,7 +64,7 @@ usbDetect.on("add", (device) =>
                     output.log(`Error: ${error.message}`);
                     if (error.message.includes("Command failed"))
                     {
-                        output.log("\nCheck if the HACconfiguration.xml is correct and that the device is plugged in correctly.");
+                        output.log("\nPlease try again.\nOtherwise, check if the HACconfiguration.xml is correct and that the device is plugged in correctly.");
                     }
                     showNotification("Error! Click here to open the GUI.");
                 } else if (stderr)
@@ -83,7 +88,7 @@ usbDetect.on("add", (device) =>
                     showNotification("Failed!");
                 }
             });
-        }, 5000);
+        }, 4000);
     } else if (device.manufacturer == "Support Professionals Ltd")
     {
         output.log("Device already programmed. {{clear}}");
@@ -103,9 +108,11 @@ usbDetect.on("remove", (device) =>
     if (clearOnUnplug)
     {
         output.clear();
+
         clearOnUnplug = false;
-        if (curNotif) {
-            curNotif.close()
+        if (curNotif)
+        {
+            curNotif.close();
         }
     }
 });
@@ -144,7 +151,7 @@ function showNotification (msg)
     {
         curNotif.close();
     }
-    var notif = new Notification({ silent: true, body: msg, icon: iconPath, title: "HAC programmer"});
+    var notif = new Notification({ silent: true, body: msg, icon: iconPath, title: "HAC programmer" });
     notif.on("click", createWindow);
     notif.show();
     curNotif = notif;
@@ -155,6 +162,7 @@ function showNotification (msg)
     });
 }
 
-app.on("before-quit", ()=>{
-    usbDetect.stopMonitoring()
-})
+app.on("before-quit", () =>
+{
+    usbDetect.stopMonitoring();
+});

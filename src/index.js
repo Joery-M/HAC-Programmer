@@ -2,9 +2,9 @@ const { app, BrowserWindow, Tray, Menu, ipcMain, nativeTheme, shell, dialog } = 
 const settings = require("electron-settings");
 const path = require('path');
 const fs = require("fs");
-const { version } = require('usb-detection');
-const { autoUpdater } = require("electron-updater")
-autoUpdater.checkForUpdates()
+const USBDetect = require('usb-detection');
+const { autoUpdater } = require("electron-updater");
+autoUpdater.checkForUpdates();
 
 if (require('electron-squirrel-startup'))
 {
@@ -72,8 +72,14 @@ const createWindow = () =>
     win.on('close', function (evt)
     {
         evt.preventDefault();
-        win.hide();
-        win.webContents.closeDevTools();
+        if (settings.getSync("backgroundRun"))
+        {
+            win.hide();
+            win.webContents.closeDevTools();
+        } else
+        {
+            app.exit();
+        }
     });
 };
 
@@ -86,11 +92,36 @@ function showWindow ()
     BrowserWindow.getAllWindows()[0].show();
 }
 
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock)
+{
+    app.exit();
+    return;
+}
+
+app.on('second-instance', () =>
+{
+    // Someone tried to run a second instance, we should focus our window.
+    showWindow();
+});
+
 app.on('ready', () =>
 {
     createWindow();
     app.name = "HAC Programmer";
     app.setAppUserModelId(app.name);
+
+    //? Set defaults
+    if (!settings.hasSync("AlreadyProgrammedNotif"))
+    {
+        settings.setSync({
+            AlreadyProgrammedNotif: false,
+            Autostart: false,
+            clearOnUnplug: true,
+            backgroundRun: true
+        });
+    }
 
     if (!fs.existsSync("C:/Program Files (x86)/FTDI/FT_Prog/FT_Prog-CmdLine.exe"))
     {
@@ -163,12 +194,19 @@ const menu = Menu.buildFromTemplate([
         label: 'File',
         submenu: [
             {
-                label: 'Open config file location',
+                label: 'Load config file',
+                click: loadConfigFile
+            },
+            {
+                label: 'Open stored config file location',
                 click: openFilePath
             },
             {
-                label: 'Load config file',
-                click: loadConfigFile
+                label: 'Open FT_Prog location',
+                click: () =>
+                {
+                    shell.showItemInFolder(fs.realpathSync("C:/Program Files (x86)/FTDI/FT_Prog/FT_Prog.exe"));
+                }
             },
             {
                 type: "separator"
@@ -191,21 +229,66 @@ const menu = Menu.buildFromTemplate([
         label: "Settings",
         submenu: [
             {
-                label: 'Notify when a device is found that has already been programmed.',
+                label: 'Notify when device is already programmed.',
                 type: 'checkbox',
+                id: "AlreadyProgrammedNotif",
                 checked: settings.getSync("AlreadyProgrammedNotif"),
                 click: () =>
                 {
-                    settings.setSync({ AlreadyProgrammedNotif: !settings.getSync("AlreadyProgrammedNotif"), Autostart: settings.getSync("Autostart") });
+                    settings.setSync("AlreadyProgrammedNotif", !settings.getSync("AlreadyProgrammedNotif"));
                 }
             },
             {
-                label: 'Automatically start programming in the background when device is found.',
+                label: 'Start programming in the background.',
                 type: 'checkbox',
+                id: "Autostart",
                 checked: settings.getSync("Autostart"),
                 click: () =>
                 {
-                    settings.setSync({ Autostart: !settings.getSync("Autostart"), AlreadyProgrammedNotif: settings.getSync("AlreadyProgrammedNotif") });
+                    settings.setSync("Autostart", !settings.getSync("Autostart"));
+                }
+            },
+            {
+                label: 'Clear output console on unplug.',
+                type: 'checkbox',
+                id: "clearOnUnplug",
+                checked: settings.getSync("clearOnUnplug"),
+                click: () =>
+                {
+                    settings.setSync("clearOnUnplug", !settings.getSync("clearOnUnplug"));
+                }
+            },
+            {
+                label: 'Run in background.',
+                type: 'checkbox',
+                id: "backgroundRun",
+                checked: settings.getSync("backgroundRun"),
+                click: () =>
+                {
+                    settings.setSync("backgroundRun", !settings.getSync("backgroundRun"));
+                }
+            },
+            {
+                type: 'separator'
+            },
+            {
+                label: 'Reset to defaults',
+                type: 'normal',
+                click: () =>
+                {
+                    settings.setSync({
+                        AlreadyProgrammedNotif: false,
+                        Autostart: false,
+                        clearOnUnplug: true,
+                        backgroundRun: true
+                    });
+                    menu.items[1].submenu.items.forEach((item) =>
+                    {
+                        if (item.type == "checkbox")
+                        {
+                            item.checked = settings.getSync(item.id);
+                        }
+                    });
                 }
             }
         ]
@@ -221,25 +304,28 @@ const menu = Menu.buildFromTemplate([
                 message: "HAC Programmer",
                 type: "info",
                 detail:
-                    `Made by: Joery
-                Version: ${app.getVersion()}
+                `Version: ${app.getVersion()}
 
-                FT_Prog exists: ${fs.existsSync("C:/Program Files (x86)/FTDI/FT_Prog/FT_Prog-CmdLine.exe")}
-                HACconfiguration.xml: ${fs.existsSync("./HACconfiguration.xml")}
+                Requirements status:
+                - FT_Prog exists: ${fs.existsSync("C:/Program Files (x86)/FTDI/FT_Prog/FT_Prog-CmdLine.exe")}
+                - HACconfiguration.xml exists: ${fs.existsSync("./HACconfiguration.xml")}
 
-                Electron: ${process.versions["electron"]}
-                USB-Detection: ${version}
+                Versions:
+                - Electron: ${process.versions["electron"]}
+                - USB-Detection: ${USBDetect.version}
 
-                Made with Electron and patience.`.replace(/    /g, ""),
+                Made with Electron and disdain for node-gyp.`.replace(/    /g, ""),
                 buttons: ["Open GitHub page", "OK"],
                 defaultId: 1,
                 cancelId: 1,
                 noLink: true
-            }).then((val)=>{
-                if (val.response == 0) {
-                    shell.openExternal("https://github.com/Joery-M/HAC-Programmer")
+            }).then((val) =>
+            {
+                if (val.response == 0)
+                {
+                    shell.openExternal("https://github.com/Joery-M/HAC-Programmer");
                 }
-            })
+            });
 
         }
     }
@@ -248,12 +334,13 @@ Menu.setApplicationMenu(menu);
 
 function openFilePath ()
 {
-    if (!fs.existsSync("./HACconfiguration.xml")) {
+    if (!fs.existsSync("./HACconfiguration.xml"))
+    {
         dialog.showMessageBox(BrowserWindow.getAllWindows()[0], {
             message: "No HACconfiguration.xml found",
             detail: "Please go to File > Load config file to load a config file.",
-        })
-        return
+        });
+        return;
     }
     shell.showItemInFolder(fs.realpathSync("./HACconfiguration.xml"));
 }

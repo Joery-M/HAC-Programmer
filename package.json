@@ -29,7 +29,8 @@
         "nsis": {
             "oneClick": true,
             "installerIcon": "./src/icon.ico",
-            "uninstallerIcon": "./src/icon.ico"
+            "uninstallerIcon": "./src/icon.ico",
+            "deleteAppDataOnUninstall": true
         }
     },
     "license": "MIT",
