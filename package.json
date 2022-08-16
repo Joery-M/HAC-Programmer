@@ -9,13 +9,10 @@
         "start": "electron-forge start",
         "startNative": "electron ./src/index.js",
         "make": "electron-builder --win",
-        "publish": "electron-builder"
+        "release": "electron-builder"
     },
     "keywords": [],
-    "author": {
-        "name": "Joery",
-        "email": "joery@joery.com"
-    },
+    "author": "Joery",
     "build": {
         "extraResources": [
             "./src/icon.ico"
@@ -34,7 +31,6 @@
         }
     },
     "license": "MIT",
-    "private": "true",
     "config": {
         "forge": {}
     },
