@@ -1,23 +1,25 @@
 const countersElem = document.querySelector("#counters tbody");
 
-document.querySelector("#addButton").onclick = () =>
+document.querySelector("#addButton").onclick = async () =>
 {
-    createCounter();
+    await createCounter();
     save();
 };
 
-
-if (localStorage.length == 0)
+(async () =>
 {
-    localStorage.setItem("counters", JSON.stringify([
-        {
-            name: "Counter 1",
-            value: "0",
-            autoName: true,
-            active: false
-        }
-    ]));
-}
+    if (localStorage.length == 0)
+    {
+        localStorage.setItem("counters", JSON.stringify([
+            {
+                name: (await translate("Counter")) + " 1",
+                value: "0",
+                autoName: true,
+                active: false
+            }
+        ]));
+    }
+})();
 
 //? Load data
 if (localStorage.getItem("counters"))
@@ -25,9 +27,9 @@ if (localStorage.getItem("counters"))
     var counters = localStorage.getItem("counters");
 
     counters = JSON.parse(counters);
-    counters.forEach((data) =>
+    counters.forEach(async (data) =>
     {
-        var counter = createCounter();
+        var counter = await createCounter();
 
         if (data.autoName)
         {
@@ -45,7 +47,7 @@ if (localStorage.getItem("counters"))
 }
 
 //? Save data
-function save ()
+async function save ()
 {
     var children = countersElem.children;
     var dataList = [];
@@ -64,7 +66,7 @@ function save ()
             collectedData.autoName = true;
         }
 
-        collectedData.name = counter.querySelector('[type="text"]').value || "Counter " + (i + 1);
+        collectedData.name = counter.querySelector('[type="text"]').value || (await translate("Counter")) + " " + (i + 1);
         collectedData.value = counter.querySelector("#num").value || 0;
         collectedData.active = counter.querySelector(".useThis").checked || false;
 
@@ -75,7 +77,7 @@ function save ()
 }
 
 
-function createCounter ()
+async function createCounter ()
 {
     var id = `counter-${countersElem.children.length}`;
 
@@ -84,9 +86,9 @@ function createCounter ()
 
     counter.innerHTML = `
     <td><input type="radio" name="useCounter" class="useThis"></td>
-    <td><input type="text" placeholder="Counter ${countersElem.children.length + 1}"></td>
+    <td><input type="text" placeholder="${await translate("Counter")} ${countersElem.children.length + 1}"></td>
     <td><input type="number" id="num" value="0"></td>
-    <td><button>Delete</button></td>
+    <td><button>${await translate("Delete")}</button></td>
     `;
 
     var tbody = document.querySelector("tbody");
@@ -136,3 +138,12 @@ onAddValue(() =>
     row.querySelector("#num").value++;
     save();
 });
+
+(async () =>
+{
+    document.querySelector("#addButton").innerHTML = await translate("Add counter");
+    document.querySelectorAll("th:not(:last-child)").forEach(async (header) =>
+    {
+        header.innerHTML = await translate(header.innerHTML);
+    });
+})();

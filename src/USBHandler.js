@@ -5,6 +5,7 @@ const settings = require("electron-settings");
 const { exec } = require("child_process");
 const window = BrowserWindow.getAllWindows()[0];
 const { createWindow } = require("./index");
+const translate = require("./i18n");
 const path = require("path");
 
 const iconPath = app.isPackaged ? path.join(process.resourcesPath, "./src/icon.ico") : "./src/icon.ico";
@@ -36,7 +37,7 @@ usbDetect.on("add", (device) =>
     {
         if (!settings.getSync("Autostart") && !window.isFocused())
         {
-            output.log("Device found, but not starting because auto-start setting is turned off.");
+            output.log(translate("Device found, but not starting because auto-start setting is turned off."));
             return;
         }
 
@@ -46,16 +47,16 @@ usbDetect.on("add", (device) =>
             fs.copyFileSync(`./HACconfiguration.xml`, `./temp.xml`,);
         } else
         {
-            showNotification(`No HACconfiguration.xml found!\nOpen the GUI, go to File > Load config file, and select a file.`);
-            return output.log(`No HACconfiguration.xml found!\n\nGo to File > Load config file, and select a file`);
+            showNotification(translate("No HACconfiguration.xml found")+`!\n` + translate(`NoConfigNotif`));
+            return output.log(translate(`NoConfigLog`));
         }
 
-        output.log("Device found, waiting for Windows...");
+        output.log(translate("Device found wait"));
 
-        showNotification("Device found, waiting for Windows...");
+        showNotification(translate("Device found wait"));
         setTimeout(() =>
         {
-            output.log("Starting FT_Prog...");
+            output.log(translate("FT_Prog starting"));
             exec(`cd "${process.cwd()}" && "C:/Program Files (x86)/FTDI/FT_Prog/FT_Prog-CmdLine.exe" SCAN PROG 0 ./temp.xml`, (error, stdout, stderr) =>
             {
                 fs.rmSync("./temp.xml");
@@ -64,38 +65,38 @@ usbDetect.on("add", (device) =>
                     output.log(`Error: ${error.message}`);
                     if (error.message.includes("Command failed"))
                     {
-                        output.log("\nPlease try again.\nOtherwise, check if the HACconfiguration.xml is correct and that the device is plugged in correctly.");
+                        output.log(translate("cmdFail"));
                     }
-                    showNotification("Error! Click here to open the GUI.");
+                    showNotification(translate("cmdFailGUIopen"));
                 } else if (stderr)
                 {
                     output.log(`stderr: ${stderr}`);
-                    showNotification("Error from FT_Prog!");
+                    showNotification(translate("progError"));
                 } else if (stdout)
                 {
                     output.log(`stdout: ${stdout}`);
-                    output.log(`Done`);
+                    output.log(translate("Done"));
                     clearOnUnplug = true;
 
-                    showNotification("Done");
+                    showNotification(translate("Done"));
 
                     window.webContents.send("addValue");
                 } else
                 {
-                    output.log("Failed!");
+                    output.log(translate("Failed!"));
                     clearOnUnplug = true;
 
-                    showNotification("Failed!");
+                    showNotification(translate("Failed!"));
                 }
             });
         }, 4000);
     } else if (device.manufacturer == "Support Professionals Ltd")
     {
-        output.log("Device already programmed. {{clear}}");
+        output.log(translate("Device already programmed.") + ` {{clear}}\n`+translate("Serial number is")+`: {{serial:${device.serialNumber}}}`);
         clearOnUnplug = true;
         if (settings.getSync("AlreadyProgrammedNotif") && !window.isFocused())
         {
-            showNotification("Device already programmed");
+            showNotification(translate("Device already programmed."));
         }
     } else
     {
@@ -120,7 +121,7 @@ usbDetect.on("remove", (device) =>
 ipcMain.on("clearDevice", () =>
 {
     output.clear();
-    output.log("Clearing device...");
+    output.log(translate("Clearing device..."));
     exec(`"C:/Program Files (x86)/FTDI/FT_Prog/FT_Prog-CmdLine.exe" SCAN ERAS 0`, (error, stdout, stderr) =>
     {
         if (error)
@@ -128,7 +129,7 @@ ipcMain.on("clearDevice", () =>
             output.log(`Error: ${error.message}`);
             if (error.message.includes("Command failed"))
             {
-                output.log("\nCheck if the device is plugged in correctly.");
+                output.log("\n" + translate("Check if the device is plugged in correctly."));
             }
             return;
         }
@@ -136,7 +137,7 @@ ipcMain.on("clearDevice", () =>
 
         if (stdout.includes("erased successfully"))
         {
-            output.log("\nCleared device.");
+            output.log("\n" + translate("Cleared device."));
         }
     });
 });

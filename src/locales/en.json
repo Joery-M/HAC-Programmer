@@ -1,0 +1,62 @@
+{
+    "Language": "Language",
+    "downloadFTpage": "Would you like to go to the download page?",
+    "downloadFToptions": [
+        "No (Quits program)",
+        "Yes"
+    ],
+    "yesNoButtons": [
+        "Yes",
+        "No"
+    ],
+    "FT_Prog not found!": "FT_Prog not found!",
+    "Open GUI": "Open GUI",
+    "Quit": "Quit",
+    "Restart": "Restart",
+    "Notify when device is already programmed.": "Notify when device is already programmed.",
+    "Start programming in the background.": "Start programming in the background.",
+    "Clear output console on unplug.": "Clear output console on unplug.",
+    "Run in background.": "Run in background.",
+    "Reset to defaults": "Reset to defaults",
+    "No HACconfiguration.xml found": "No HACconfiguration.xml found",
+    "Please go to File > Load config file to load a config file.": "Please go to File > Load config file to load a config file.",
+    "File": "File",
+    "Settings": "Settings",
+    "Load config file": "Load config file",
+    "Open stored config file location": "Open stored config file location",
+    "Open FT_Prog location": "Open FT_Prog location",
+    "Config loaded.": "Config loaded.",
+    "infoMsg": "Version: {{appVer}}\n\nRequirements status:\n- FT_Prog exists: {{ftProgExist:True:False}}\n- HACconfiguration.xml exists: {{configExist:True:False}}\nVersions:\n- Electron: {{electronVer}}\n- USB-Detection: {{usbVer}}\n\nMade with Electron and disdain for node-gyp.",
+    "infoButtons": [
+        "Open GitHub page",
+        "OK"
+    ],
+
+    "Clear device?": "Clear device?",
+    "Device found, but not starting because auto-start setting is turned off.": "Device found, but not starting because auto-start setting is turned off.",
+    "NoConfigNotif": "Open the GUI, go to File > Load config file, and select a file.",
+    "NoConfigLog": "No HACconfiguration.xml found!\n\nGo to File > Load config file, and select a file",
+    "Device found wait": "Device found, waiting for Windows...",
+    "FT_Prog starting": "Starting FT_Prog...",
+    "cmdFail": "\nPlease try again.\nOtherwise, check if the HACconfiguration.xml is correct and that the device is plugged in correctly.",
+    "cmdFailGUIopen": "Error! Click here to open the GUI.",
+    "progError": "Error from FT_Prog!",
+    "Done": "Done",
+    "Failed!": "Failed!",
+    "Device already programmed.": "Device already programmed.",
+    "Serial number is": "Serial number is",
+
+    "Clearing device...": "Clearing device...",
+    "Cleared device.": "Cleared device.",
+    "Check if the device is plugged in correctly.": "Check if the device is plugged in correctly.",
+
+    "Add counter": "Add counter",
+    "Active": "Active",
+    "Name": "Name",
+    "Amount": "Amount",
+    "Counter": "Counter",
+    "Delete": "Delete",
+
+    "changeLangMsg": "Are you sure you want to switch to {{lang}}?",
+    "changeLangDet": "The program will have to restart."
+}

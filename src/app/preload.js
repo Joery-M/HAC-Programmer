@@ -41,16 +41,20 @@ function calcTableHeight ()
 }
 
 
-ipcRenderer.on("log", (_ev, data) =>
+ipcRenderer.on("log", async (_ev, data) =>
 {
     var output = document.querySelector("#output");
 
+    // replace newline with a break
     var text = data.replace(/\n/g, "<br>");
-    text = text.replace(/{{clear}}/g, '<a onclick="clearDevice()" href="javascript:void(0);">Clear device?</a>');
+    // clear button
+    text = text.replace(/{{clear}}/g, `<a onclick="clearDevice()" href="javascript:void(0);">${await translate("Clear device?")}</a>`);
+    // copy button
+    text = text.replace(/{{serial:(.*)}}/g, `<a onclick="copySerial('$1')" href="javascript:void(0);" title="Click to copy">$1</a>`);
 
     output.innerHTML += text + "<br>";
 
-    output.scroll({ top: 1000 });
+    output.scroll({ top: output.scrollHeight });
 });
 
 
@@ -70,3 +74,14 @@ contextBridge.exposeInMainWorld("onAddValue", (func) =>
 {
     ipcRenderer.on("addValue", func);
 });
+
+contextBridge.exposeInMainWorld("copySerial", (serial) =>
+{
+    navigator.clipboard.writeText(serial);
+});
+
+contextBridge.exposeInMainWorld("translate", translate);
+
+async function translate(phrase) {
+    return await ipcRenderer.invoke("translate", phrase)
+}

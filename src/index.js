@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require("fs");
 const USBDetect = require('usb-detection');
 const { autoUpdater } = require("electron-updater");
+const translate = require("./i18n");
 autoUpdater.checkForUpdates();
 
 if (require('electron-squirrel-startup'))
@@ -79,6 +80,11 @@ const createWindow = () =>
         }
     });
 
+    ipcMain.handle("translate", (ev, string) =>
+    {
+        return (translate(string));
+    });
+
     //? Hide the window when closed
     win.on('close', function (evt)
     {
@@ -116,7 +122,7 @@ app.on('second-instance', () =>
     // Someone tried to run a second instance, we should focus our window.
     showWindow();
 });
-
+app.commandLine.appendSwitch("lang", settings.getSync("lang") ?? "en");
 app.on('ready', () =>
 {
     createWindow();
@@ -127,9 +133,9 @@ app.on('ready', () =>
     {
         var box = dialog.showMessageBoxSync({
             title: "HAC Programmer",
-            message: "FT_Prog not found!",
-            detail: "Would you like to go to the download page?",
-            buttons: ["No (Quits program)", "Yes"],
+            message: translate("FT_Prog not found!"),
+            detail: translate("downloadFTpage"),
+            buttons: translate("downloadFToptions"),
             defaultId: 1,
             noLink: true,
             type: "warning"
@@ -172,13 +178,227 @@ app.on('ready', () =>
 
     let tray = new Tray(iconPath);
     const contextMenu = Menu.buildFromTemplate([
-        { label: 'Open GUI', type: 'normal', click: showWindow },
-        { label: 'Quit', type: 'normal', click: app.exit }
+        { label: translate('Open GUI'), type: 'normal', click: showWindow },
+        { label: translate('Quit'), type: 'normal', click: app.exit }
     ]);
     tray.setToolTip('HAC Programmer');
     tray.setContextMenu(contextMenu);
 
     tray.on("click", showWindow);
+
+
+    //? Menu bar
+    const menu = Menu.buildFromTemplate([
+        {
+            label: translate('File'),
+            submenu: [
+                {
+                    label: translate('Load config file'),
+                    click: loadConfigFile
+                },
+                {
+                    label: translate('Open stored config file location'),
+                    click: openFilePath
+                },
+                {
+                    label: translate('Open FT_Prog location'),
+                    click: () =>
+                    {
+                        shell.showItemInFolder(fs.realpathSync("C:/Program Files (x86)/FTDI/FT_Prog/FT_Prog.exe"));
+                    }
+                },
+                {
+                    type: "separator"
+                },
+                {
+                    label: translate('Restart'),
+                    click: () =>
+                    {
+                        app.exit();
+                        app.relaunch();
+                    }
+                },
+                {
+                    label: translate('Quit'),
+                    click: () =>
+                    {
+                        app.exit();
+                    }
+                }
+            ]
+        },
+        {
+            label: translate("Settings"),
+            submenu: [
+                {
+                    label: translate('Notify when device is already programmed.'),
+                    type: 'checkbox',
+                    id: "AlreadyProgrammedNotif",
+                    checked: settings.getSync("AlreadyProgrammedNotif"),
+                    click: () =>
+                    {
+                        settings.setSync("AlreadyProgrammedNotif", !settings.getSync("AlreadyProgrammedNotif"));
+                    }
+                },
+                {
+                    label: translate('Start programming in the background.'),
+                    type: 'checkbox',
+                    id: "Autostart",
+                    checked: settings.getSync("Autostart"),
+                    click: () =>
+                    {
+                        settings.setSync("Autostart", !settings.getSync("Autostart"));
+                    }
+                },
+                {
+                    label: translate('Clear output console on unplug.'),
+                    type: 'checkbox',
+                    id: "clearOnUnplug",
+                    checked: settings.getSync("clearOnUnplug"),
+                    click: () =>
+                    {
+                        settings.setSync("clearOnUnplug", !settings.getSync("clearOnUnplug"));
+                    }
+                },
+                {
+                    label: translate('Run in background.'),
+                    type: 'checkbox',
+                    id: "backgroundRun",
+                    checked: settings.getSync("backgroundRun"),
+                    click: () =>
+                    {
+                        settings.setSync("backgroundRun", !settings.getSync("backgroundRun"));
+                    }
+                },
+                {
+                    type: 'separator'
+                },
+                {
+                    label: translate('Reset to defaults'),
+                    type: 'normal',
+                    click: () =>
+                    {
+                        settings.setSync({
+                            AlreadyProgrammedNotif: false,
+                            Autostart: false,
+                            clearOnUnplug: true,
+                            backgroundRun: true
+                        });
+                        menu.items[1].submenu.items.forEach((item) =>
+                        {
+                            if (item.type == "checkbox")
+                            {
+                                item.checked = settings.getSync(item.id);
+                            }
+                        });
+                    }
+                }
+            ]
+        },
+        {
+            label: translate("Language"),
+            type: "submenu",
+            submenu: [
+                {
+                    label: "English",
+                    type: "radio",
+                    checked: app.getLocale() == "en",
+                    click: languageSelect
+                },
+                {
+                    label: "Nederlands",
+                    type: "radio",
+                    checked: app.getLocale() == "nl",
+                    click: languageSelect
+                },
+                {
+                    label: "Français",
+                    type: "radio",
+                    checked: app.getLocale() == "fr",
+                    click: languageSelect
+                }
+            ]
+        },
+        {
+            label: "Info",
+            type: "normal",
+            click: (ev) =>
+            {
+                var win = BrowserWindow.getAllWindows()[0];
+
+                var detailMessage = translate("infoMsg");
+
+                detailMessage = detailMessage.replace(/{{appVer}}/g, app.getVersion());
+                detailMessage = detailMessage.replace(/{{ftProgExist:(.*):(.*)}}/g, fs.existsSync("C:/Program Files (x86)/FTDI/FT_Prog/FT_Prog-CmdLine.exe") ? "$1" : "$2");
+                detailMessage = detailMessage.replace(/{{configExist:(.*):(.*)}}/g, fs.existsSync("./HACconfiguration.xml") ? "$1" : "$2");
+                detailMessage = detailMessage.replace(/{{electronVer}}/g, process.versions["electron"]);
+                detailMessage = detailMessage.replace(/{{usbVer}}/g, USBDetect.version);
+                dialog.showMessageBox(win, {
+                    title: "HAC Programmer",
+                    message: "HAC Programmer",
+                    type: "info",
+                    detail: detailMessage.replace(/    /g, ""),
+                    buttons: translate("infoButtons"),
+                    defaultId: 1,
+                    cancelId: 1,
+                    noLink: true
+                }).then((val) =>
+                {
+                    if (val.response == 0)
+                    {
+                        shell.openExternal("https://github.com/Joery-M/HAC-Programmer");
+                    }
+                });
+
+            }
+        }
+    ]);
+    Menu.setApplicationMenu(menu);
+
+
+    /**
+     * @param {Electron.MenuItem} item
+     */
+    function languageSelect (item)
+    {
+        var lang = item.label;
+
+        var codes = { "English": "en", "Nederlands": "nl", "Français": "fr" };
+
+        var code = codes[lang];
+
+        var msgbox = dialog.showMessageBoxSync(BrowserWindow.getAllWindows()[0], {
+            message: translate("changeLangMsg", code).replace("{{lang}}", lang),
+            detail: translate("changeLangDet", code),
+            buttons: translate("yesNoButtons", code),
+            noLink: true
+        });
+
+        if (msgbox == 0)
+        {
+            settings.setSync("lang", code);
+            app.exit();
+            app.relaunch();
+        } else
+        {
+            var langFull = Object.keys(codes).find(key => codes[key] === app.getLocale().split("-")[0]);
+            //? Reset checked to previous
+            // console.log(menu.items[2].submenu.items.find((mItem) =>
+            // {
+            //     console.log(mItem.label, app.getLocale().split("-")[0]);
+            //     mItem.label == app.getLocale().split("-")[0];
+            // })[0]);
+            menu.items[2].submenu.items.find((mItem) => mItem.label == langFull).checked = true;
+
+            // menu.items[2].submenu.items.forEach((mItem, i) =>
+            // {
+            //     if (codes[mItem.label] == app.getLocale().split("-")[0])
+            //     {
+            //         mItem.checked = true;
+            //     }
+            // });
+        }
+    }
 });
 
 app.on('activate', () =>
@@ -186,162 +406,13 @@ app.on('activate', () =>
     showWindow();
 });
 
-
-
-//? Menu bar
-const menu = Menu.buildFromTemplate([
-    {
-        label: 'File',
-        submenu: [
-            {
-                label: 'Load config file',
-                click: loadConfigFile
-            },
-            {
-                label: 'Open stored config file location',
-                click: openFilePath
-            },
-            {
-                label: 'Open FT_Prog location',
-                click: () =>
-                {
-                    shell.showItemInFolder(fs.realpathSync("C:/Program Files (x86)/FTDI/FT_Prog/FT_Prog.exe"));
-                }
-            },
-            {
-                type: "separator"
-            },
-            {
-                label: 'Restart',
-                click: () =>
-                {
-                    app.exit();
-                    app.relaunch();
-                }
-            },
-            {
-                label: 'Quit',
-                click: () =>
-                {
-                    app.exit();
-                }
-            }
-        ]
-    },
-    {
-        label: "Settings",
-        submenu: [
-            {
-                label: 'Notify when device is already programmed.',
-                type: 'checkbox',
-                id: "AlreadyProgrammedNotif",
-                checked: settings.getSync("AlreadyProgrammedNotif"),
-                click: () =>
-                {
-                    settings.setSync("AlreadyProgrammedNotif", !settings.getSync("AlreadyProgrammedNotif"));
-                }
-            },
-            {
-                label: 'Start programming in the background.',
-                type: 'checkbox',
-                id: "Autostart",
-                checked: settings.getSync("Autostart"),
-                click: () =>
-                {
-                    settings.setSync("Autostart", !settings.getSync("Autostart"));
-                }
-            },
-            {
-                label: 'Clear output console on unplug.',
-                type: 'checkbox',
-                id: "clearOnUnplug",
-                checked: settings.getSync("clearOnUnplug"),
-                click: () =>
-                {
-                    settings.setSync("clearOnUnplug", !settings.getSync("clearOnUnplug"));
-                }
-            },
-            {
-                label: 'Run in background.',
-                type: 'checkbox',
-                id: "backgroundRun",
-                checked: settings.getSync("backgroundRun"),
-                click: () =>
-                {
-                    settings.setSync("backgroundRun", !settings.getSync("backgroundRun"));
-                }
-            },
-            {
-                type: 'separator'
-            },
-            {
-                label: 'Reset to defaults',
-                type: 'normal',
-                click: () =>
-                {
-                    settings.setSync({
-                        AlreadyProgrammedNotif: false,
-                        Autostart: false,
-                        clearOnUnplug: true,
-                        backgroundRun: true
-                    });
-                    menu.items[1].submenu.items.forEach((item) =>
-                    {
-                        if (item.type == "checkbox")
-                        {
-                            item.checked = settings.getSync(item.id);
-                        }
-                    });
-                }
-            }
-        ]
-    },
-    {
-        label: "Info",
-        type: "normal",
-        click: (ev) =>
-        {
-            var win = BrowserWindow.getAllWindows()[0];
-            dialog.showMessageBox(win, {
-                title: "HAC Programmer",
-                message: "HAC Programmer",
-                type: "info",
-                detail:
-                `Version: ${app.getVersion()}
-
-                Requirements status:
-                - FT_Prog exists: ${fs.existsSync("C:/Program Files (x86)/FTDI/FT_Prog/FT_Prog-CmdLine.exe")}
-                - HACconfiguration.xml exists: ${fs.existsSync("./HACconfiguration.xml")}
-
-                Versions:
-                - Electron: ${process.versions["electron"]}
-                - USB-Detection: ${USBDetect.version}
-
-                Made with Electron and disdain for node-gyp.`.replace(/    /g, ""),
-                buttons: ["Open GitHub page", "OK"],
-                defaultId: 1,
-                cancelId: 1,
-                noLink: true
-            }).then((val) =>
-            {
-                if (val.response == 0)
-                {
-                    shell.openExternal("https://github.com/Joery-M/HAC-Programmer");
-                }
-            });
-
-        }
-    }
-]);
-Menu.setApplicationMenu(menu);
-
 function openFilePath ()
 {
     if (!fs.existsSync("./HACconfiguration.xml"))
     {
         dialog.showMessageBox(BrowserWindow.getAllWindows()[0], {
-            message: "No HACconfiguration.xml found",
-            detail: "Please go to File > Load config file to load a config file.",
+            message: translate("No HACconfiguration.xml found"),
+            detail: translate("Please go to File > Load config file to load a config file."),
         });
         return;
     }
@@ -362,5 +433,5 @@ async function loadConfigFile ()
     }
 
     fs.copyFileSync(filePicker.filePaths[0], "./HACconfiguration.xml");
-    win.webContents.send('log', "Config loaded.");
+    win.webContents.send('log', translate("Config loaded."));
 }

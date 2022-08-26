@@ -1,0 +1,62 @@
+{
+    "Language": "Taal",
+    "downloadFTpage": "Wil je naar de download pagina gaan?",
+    "downloadFToptions": [
+        "Nee (Sluit programma)",
+        "Ja"
+    ],
+    "yesNoButtons": [
+        "Ja",
+        "Nee"
+    ],
+    "FT_Prog not found!": "FT_Prog niet gevonden!",
+    "Open GUI": "Open GUI",
+    "Quit": "Afsluiten",
+    "Restart": "Herstarten",
+    "Notify when device is already programmed.": "Melding wanneer het apparaat al is geprogrammeerd.",
+    "Start programming in the background.": "Begin met programmeren in de achtergrond.",
+    "Clear output console on unplug.": "Wis de console bij loskoppelen.",
+    "Run in background.": "Laten lopen op de achtergrond.",
+    "Reset to defaults": "Reset naar standaardwaarden",
+    "No HACconfiguration.xml found": "Geen HACconfiguration.xml gevonden",
+    "Please go to File > Load config file to load a config file.": "Ga naar Bestand > Laad configuratiebestand om een configuratiebestand te laden.",
+    "File": "Bestand",
+    "Settings": "Settings",
+    "Load config file": "Laad configuratiebestand",
+    "Open stored config file location": "Open opgeslagen configuratiebestandslocatie",
+    "Open FT_Prog location": "Open FT_Prog locatie",
+    "Config loaded.": "Configuratie geladen.",
+    "infoMsg": "Versie: {{appVer}}\n\nVereisten:\n- FT_Prog bestaat: {{ftProgExist:Ja:Nee}}\n- HACconfiguration.xml bestaat: {{configExist:Ja:Nee}}\nVersies:\n- Electron: {{electronVer}}\n- USB-Detection: {{usbVer}}\n\nGemaakt met Electron en minachting voor node-gyp.",
+    "infoButtons": [
+        "Open GitHub pagina",
+        "OK"
+    ],
+
+    "Clear device?": "Apparaat wissen?",
+    "Device found, but not starting because auto-start setting is turned off.": "Apparaat gevonden, maar niet begonnen omdat de instelling Auto-Start is uitgeschakeld.",
+    "NoConfigNotif": "Open de GUI, ga naar Bestand > Laad configuratiebestand en selecteer een bestand.",
+    "NoConfigLog": "No HACconfiguration.xml found!\n\nGo to Bestand > Laad configuratiebestand, en selecteer een bestand",
+    "Device found wait": "Apparaat gevonden, wachten op Windows...",
+    "FT_Prog starting": "FT_Prog wordt gestart...",
+    "cmdFail": "\nProbeer het opnieuw.\nControleer anders of de HACconfiguration.xml juist is en dat het apparaat correct is aangesloten.",
+    "cmdFailGUIopen": "Error! Klik hier om de GUI te openen.",
+    "progError": "Error van FT_Prog!",
+    "Done": "Klaar",
+    "Failed!": "Mislukt!",
+    "Device already programmed.": "Apparaat al geprogrammeerd.",
+    "Serial number is": "Serienummer is",
+
+    "Clearing device...": "Apparaat wissen...",
+    "Cleared device.": "Apparaat gewist.",
+    "Check if the device is plugged in correctly.": "Controleer of het apparaat correct is aangesloten.",
+
+    "Add counter": "Maak teller",
+    "Active": "Actief",
+    "Name": "Naam",
+    "Amount": "Aantal",
+    "Counter": "Teller",
+    "Delete": "Verwijder",
+
+    "changeLangMsg": "Weet je zeker dat je wilt schakelen naar {{lang}}?",
+    "changeLangDet": "Het programma moet opnieuw opstarten."
+}
