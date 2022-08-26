@@ -383,20 +383,7 @@ app.on('ready', () =>
         {
             var langFull = Object.keys(codes).find(key => codes[key] === app.getLocale().split("-")[0]);
             //? Reset checked to previous
-            // console.log(menu.items[2].submenu.items.find((mItem) =>
-            // {
-            //     console.log(mItem.label, app.getLocale().split("-")[0]);
-            //     mItem.label == app.getLocale().split("-")[0];
-            // })[0]);
             menu.items[2].submenu.items.find((mItem) => mItem.label == langFull).checked = true;
-
-            // menu.items[2].submenu.items.forEach((mItem, i) =>
-            // {
-            //     if (codes[mItem.label] == app.getLocale().split("-")[0])
-            //     {
-            //         mItem.checked = true;
-            //     }
-            // });
         }
     }
 });
